@@ -18,3 +18,12 @@
 ```bash
 pip install -r requirements.txt
 ```
+
+The `CW1` and `CW2` folders contain the files and reports for the two assignments, respectively.
+
+
+## End of Course
+
+![school](school.jpg)
+ 
+Happy graduation, and thank you for being with me along the way.
