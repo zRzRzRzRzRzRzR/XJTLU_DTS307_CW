@@ -414,7 +414,6 @@ def train_agent(
             np.save(metrics_file, metrics)
             wandb.save(metrics_file)
 
-            # Create plots and save to wandb
             plot_metrics(
                 scores[:i_episode],
                 losses[:i_episode],
@@ -440,7 +439,6 @@ def plot_metrics(scores, losses, q_values, epsilons, episode_lengths, save_dir="
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
-    # Plot scores
     plt.figure(figsize=(12, 8))
     window_size = 100
     plt.plot(np.arange(len(scores)), scores, alpha=0.3, label="Episode Score")
@@ -457,7 +455,6 @@ def plot_metrics(scores, losses, q_values, epsilons, episode_lengths, save_dir="
     plt.savefig(os.path.join(save_dir, "scores_plot.png"))
     plt.close()
 
-    # Plot losses
     valid_losses = [x for x in losses if not np.isnan(x)]
     if valid_losses:
         plt.figure(figsize=(12, 8))
@@ -646,6 +643,33 @@ def evaluate_agent(agent, env, n_episodes=10, render=False, save_path=None):
     logger.info(f"Average Action Distribution: {action_dist_str}")
 
     if save_path:
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+        ax1.plot(range(1, len(scores) + 1), scores, 'b-', linewidth=2, marker='o', markersize=4)
+        ax1.axhline(y=avg_score, color='r', linestyle='--', linewidth=2, label=f'Mean: {avg_score:.2f}')
+        ax1.axhline(y=min_score, color='g', linestyle=':', linewidth=2, label=f'Min: {min_score:.2f}')
+        ax1.axhline(y=max_score, color='b', linestyle=':', linewidth=2, label=f'Max: {max_score:.2f}')
+
+        ax1.set_xlabel('Episode')
+        ax1.set_ylabel('Return')
+        ax1.set_title('Evaluation Returns')
+        ax1.legend()
+        ax1.grid(True, alpha=0.3)
+        ax2.hist(score_distribution, bins=10, alpha=0.7, color='skyblue', edgecolor='black')
+        ax2.axvline(avg_score, color='r', linestyle='--', linewidth=2, label=f'Mean: {avg_score:.2f}')
+        ax2.set_xlabel('Return')
+        ax2.set_ylabel('Frequency')
+        ax2.set_title('Distribution of Evaluation Returns')
+        ax2.legend()
+        ax2.grid(True, alpha=0.3)
+
+        plt.tight_layout()
+        eval_returns_path = os.path.join(save_path, "evaluation_returns_combined.png")
+        plt.savefig(eval_returns_path, dpi=300, bbox_inches='tight')
+        plt.close()
+
+        logger.info(f"Combined evaluation returns plot saved to {eval_returns_path}")
+        wandb.log({"eval_returns_combined": wandb.Image(eval_returns_path)})
+
         plt.figure(figsize=(10, 6))
         plt.hist(score_distribution, bins=10, alpha=0.7)
         plt.axvline(avg_score, color="r", linestyle="dashed", linewidth=2)
@@ -691,7 +715,6 @@ def evaluate_agent(agent, env, n_episodes=10, render=False, save_path=None):
         "scores": scores,
         "episode_lengths": episode_lengths,
     }
-
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Double DQN for Atari Games")
