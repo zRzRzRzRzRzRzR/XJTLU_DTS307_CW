@@ -1,5 +1,0 @@
-avg_score: 19.8
-avg_length: 1748.6
-max_score: 21.0
-min_score: 17.0
-score_std: 1.0770329614269007
